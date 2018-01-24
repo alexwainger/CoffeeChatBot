@@ -11,6 +11,7 @@ from email.MIMEText import MIMEText
 
 groupSize = 4
 iterations = 100000
+ignoreNewMember = False
 data_file = "data/2017-18.csv"
 
 class Person:
@@ -53,11 +54,12 @@ def generateGroups(people_list):
 				for j in range(i + 1, len(group)):
 					person2 = group[j]
 					for k in range(len(person1.group_history)):
-						if person1.group_history[k] == person2.group_history[k] and (person1.name != 'Alex Wainger' and person2.name != 'Alex Wainger'):
-						        conflict_pairs.append((person1.name, person2.name))
+						if person1.group_history[k] == person2.group_history[k]:
+							conflict_pairs.append((person1.name, person2.name))
 							conflicts += 1
 
-		if (conflicts < minConflicts and np.all(new_member_score < groupSize)) or (conflicts == minConflicts and np.all(new_member_score < groupSize) and np.std(new_member_score) < best_new_member_std):
+		if (conflicts < minConflicts and np.all(new_member_score < groupSize)) or \
+		   (conflicts == minConflicts and np.all(new_member_score < groupSize) and np.std(new_member_score) < best_new_member_std):
 			print "Iteration", it, "- ",conflicts,"conflicts and", np.std(new_member_score),"std!"
 			for pair in conflict_pairs:
 				print "\t",pair
@@ -124,7 +126,19 @@ def main():
 			if groups:
 				for i, group in enumerate(groups):
 					print "Group",i,"-",group
-				approved = raw_input("Type \"Yes\" to send the emails, or type anything to regroup: ") == "Yes"
+				feedbackIsValid = False
+				while not feedbackIsValid:
+					feedback = raw_input("Type \"Yes\" to send the emails, type \"Exit\" to quit the program, or press Enter to regroup: ")
+					if feedback == 'Exit':
+						exit(0)
+					elif feedback == '':
+						approved = False
+						feedbackIsValid = True
+					elif feedback == 'Yes':
+						approved = True
+						feedbackIsValid = True
+					else:
+						print 'Don\'t know how to handle that input...'
 			else:
 				print "No groups found, running algorithm again..."
 
